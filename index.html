@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小王子 · The Little Prince — 多语言双语朗读阅读器</title>
+<style>
+  :root{
+    --bg:#0e1726; --bg2:#13203a; --card:#1b2b4a; --gold:#e7b94f;
+    --rose:#e86a8c; --txt:#eef3fb; --muted:#9fb0cc; --line:#2a3c5e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#1c2c4d,var(--bg));color:var(--txt);
+    min-height:100vh;padding:48px 18px 64px}
+  .wrap{max-width:980px;margin:0 auto}
+  header{text-align:center;margin-bottom:14px}
+  .star{font-size:30px;color:var(--gold);letter-spacing:6px}
+  h1{margin:10px 0 4px;font-size:30px;font-weight:700;letter-spacing:1px}
+  .sub{color:var(--muted);font-size:15px;margin:0}
+  .book{font-style:italic;color:var(--rose)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:30px}
+  .card{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);
+    border-radius:16px;padding:22px 22px 20px;position:relative;overflow:hidden;
+    transition:transform .15s,border-color .15s,box-shadow .15s}
+  .card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .flag{font-size:34px;line-height:1}
+  .lang{font-size:20px;font-weight:700;margin:12px 0 2px}
+  .native{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .badge{position:absolute;top:16px;right:16px;font-size:12px;padding:3px 10px;border-radius:999px;
+    background:rgba(231,185,79,.15);color:var(--gold);border:1px solid rgba(231,185,79,.4)}
+  .badge.off{background:rgba(159,176,204,.12);color:var(--muted);border-color:rgba(159,176,204,.3)}
+  .btn{display:inline-block;text-decoration:none;color:#0e1726;background:var(--gold);
+    padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px}
+  .btn.off{background:transparent;color:var(--muted);border:1px solid var(--line);cursor:default}
+  .desc{color:var(--muted);font-size:13px;margin:14px 0 18px;line-height:1.6}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px;line-height:1.7}
+  footer a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="star">✦ ✧ ✦</div>
+    <h1>小王子 · The Little Prince</h1>
+    <p class="sub">多语言双语朗读阅读器 — 俄 / 意 / 西 / 法 / 英</p>
+  </header>
+
+  <div class="grid">
+    <!-- 俄语：已上线 -->
+    <div class="card">
+      <div class="badge">已上线</div>
+      <div class="flag">🇷🇺</div>
+      <div class="lang">Русский · 俄语</div>
+      <div class="native">Маленький принц</div>
+      <div class="desc">俄语真人配音（edge-tts）、无极调速、逐句音标（IPA）、单句点读、打断续播、俄中双语对照。</div>
+      <a class="btn" href="russian/index.html">进入阅读 →</a>
+    </div>
+
+    <!-- 意大利语：待上线 -->
+    <div class="card">
+      <div class="badge off">即将上线</div>
+      <div class="flag">🇮🇹</div>
+      <div class="lang">Italiano · 意大利语</div>
+      <div class="native">Il piccolo principe</div>
+      <div class="desc">意中双语朗读版，复用本项目配音与音标流水线。</div>
+      <span class="btn off">敬请期待</span>
+    </div>
+
+    <!-- 西班牙语：待上线 -->
+    <div class="card">
+      <div class="badge off">即将上线</div>
+      <div class="flag">🇪🇸</div>
+      <div class="lang">Español · 西班牙语</div>
+      <div class="native">El principito</div>
+      <div class="desc">西中双语朗读版，含动词变位辅助。</div>
+      <span class="btn off">敬请期待</span>
+    </div>
+
+    <!-- 法语：待上线 -->
+    <div class="card">
+      <div class="badge off">即将上线</div>
+      <div class="flag">🇫🇷</div>
+      <div class="lang">Français · 法语</div>
+      <div class="native">Le Petit Prince</div>
+      <div class="desc">法中双语朗读版，法国蓝白红主题视觉。</div>
+      <span class="btn off">敬请期待</span>
+    </div>
+
+    <!-- 英语：待上线 -->
+    <div class="card">
+      <div class="badge off">即将上线</div>
+      <div class="flag">🇬🇧</div>
+      <div class="lang">English · 英语</div>
+      <div class="native">The Little Prince</div>
+      <div class="desc">英中双语朗读版，纯正英音配音。</div>
+      <span class="btn off">敬请期待</span>
+    </div>
+  </div>
+
+  <footer>
+    源著 Antoine de Saint-Exupéry · 多语言双语阅读项目由 <strong>涛子办事处</strong> 维护
+  </footer>
+</div>
+</body>
+</html>
