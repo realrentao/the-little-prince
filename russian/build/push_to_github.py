@@ -54,6 +54,19 @@ def collect():
     for fn in sorted(os.listdir(os.path.join(ROOT, "audio"))):
         if fn.endswith(".mp3") or fn.endswith(".json"):
             out.append((f"audio/{fn}", f"{SUB}/audio/{fn}", "bin" if fn.endswith(".mp3") else "text"))
+    # illustrations/ PNG 插画（仅 v2 命名：含 _xN 段，避免推送早期 v1 残留）
+    idir = os.path.join(ROOT, "illustrations")
+    if os.path.isdir(idir):
+        for fn in sorted(os.listdir(idir)):
+            if not fn.endswith(".png"):
+                continue
+            if fn.startswith(EXCLUDE_PREFIX):
+                continue
+            # 仅推送被 placement.json 引用的：v2 命名格式 ill_pNNN_xNNN.png
+            # v1 残留 ill_pNNN.png (无 _x) 不推送
+            if "_x" not in fn:
+                continue
+            out.append((f"illustrations/{fn}", f"{SUB}/illustrations/{fn}", "bin"))
     # build/ 纯文本流水线（排除日志/临时）
     bdir = os.path.join(ROOT, "build")
     if os.path.isdir(bdir):

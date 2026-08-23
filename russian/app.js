@@ -4,10 +4,33 @@
 
   const BOOK = window.__BOOK__;
   const LEX = window.__LEX__ || {};
+  const ILLUST = window.__ILLUST__ || [];
   if (!BOOK) {
     document.getElementById("content").innerHTML =
       '<p style="color:#c00">数据未加载：请确认 data/book.js 存在。</p>';
     return;
+  }
+
+  // Per-chapter illustration tables. Each entry: {file, position: "header"|"inline", after_sentence, pdf_page}
+  const illByCh = {};
+  ILLUST.forEach((it) => {
+    if (!illByCh[it.chapter]) illByCh[it.chapter] = [];
+    illByCh[it.chapter].push(it);
+  });
+  function illustImg(file, alt) {
+    const wrap = document.createElement("figure");
+    wrap.className = "illust";
+    const img = document.createElement("img");
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.src = "illustrations/" + file;
+    img.alt = alt || "";
+    const cap = document.createElement("figcaption");
+    cap.className = "illust-cap";
+    cap.textContent = "圣埃克苏佩里 原版插画";
+    wrap.appendChild(img);
+    wrap.appendChild(cap);
+    return wrap;
   }
 
   const $ = (id) => document.getElementById(id);
@@ -129,7 +152,29 @@
     sub.textContent = ch.title_zh;
     head.appendChild(h);
     head.appendChild(sub);
+
+    // Header illustration for this chapter (position == "header")
+    const chIll = illByCh[curChapter] || [];
+    const headerIll = chIll.find((x) => x.position === "header");
+    if (headerIll) {
+      const fig = illustImg(headerIll.file, ch.title_ru + " 原版插画");
+      fig.classList.add("illust-header");
+      head.appendChild(fig);
+    }
+
     box.appendChild(head);
+
+    // For inline illustrations, place by per-chapter sentence index
+    const inlineIlls = chIll.filter((x) => x.position === "inline");
+    // Build a set: after_sentence_idx -> figure
+    const inlineBySent = {};
+    inlineIlls.forEach((it) => {
+      const idx = (typeof it.after_sentence === "number") ? it.after_sentence : 0;
+      if (!inlineBySent[idx]) inlineBySent[idx] = [];
+      inlineBySent[idx].push(it);
+    });
+    // Track running global sentence index within this chapter for inline placement
+    let runningSentIdx = -1;
 
     ch.paras.forEach((p, pi) => {
       const div = document.createElement("div");
@@ -201,6 +246,17 @@
         }
 
         div.appendChild(sd);
+
+        // After this sentence, check if any inline illustration should be placed here
+        runningSentIdx += 1;
+        const illustList = inlineBySent[runningSentIdx];
+        if (illustList && illustList.length) {
+          illustList.forEach((it) => {
+            const fig = illustImg(it.file, ch.title_ru + " 插画");
+            fig.classList.add("illust-inline");
+            div.appendChild(fig);
+          });
+        }
       });
 
       box.appendChild(div);
