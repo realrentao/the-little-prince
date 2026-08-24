@@ -58,6 +58,10 @@ def collect():
     idir = os.path.join(ROOT, "illustrations")
     if os.path.isdir(idir):
         for fn in sorted(os.listdir(idir)):
+            # placement.json 始终推送（插画位置源数据）
+            if fn == "placement.json":
+                out.append((f"illustrations/{fn}", f"{SUB}/illustrations/{fn}", "text"))
+                continue
             if not fn.endswith(".png"):
                 continue
             if fn.startswith(EXCLUDE_PREFIX):
@@ -102,15 +106,29 @@ def main():
     tree_items = []
     failed = []
     BLOB_BATCH = 15
+
+    def git_blob_sha1(raw: bytes) -> str:
+        """Compute git blob SHA-1: 'blob <size>\0' + content"""
+        import hashlib
+        h = hashlib.sha1()
+        h.update(b"blob " + str(len(raw)).encode() + b"\x00" + raw)
+        return h.hexdigest()
+
     for bi in range(0, len(files), BLOB_BATCH):
         batch = files[bi:bi + BLOB_BATCH]
         for local_rel, gh_path, kind in batch:
             full = os.path.join(ROOT, local_rel)
             with open(full, "rb") as f:
                 raw = f.read()
+            # 命中缓存时校验本地内容是否真的一致（避免改了内容却跳过 POST 导致空提交）
             if gh_path in blob_cache:
-                tree_items.append({"path": gh_path, "mode": "100644", "type": "blob", "sha": blob_cache[gh_path]})
-                continue
+                if blob_cache[gh_path] == git_blob_sha1(raw):
+                    tree_items.append({"path": gh_path, "mode": "100644", "type": "blob", "sha": blob_cache[gh_path]})
+                    continue
+                else:
+                    # 内容已变，移除旧缓存，下面重新 POST
+                    del blob_cache[gh_path]
+
             if kind == "text":
                 payload = {"content": raw.decode("utf-8"), "encoding": "utf-8"}
             else:
