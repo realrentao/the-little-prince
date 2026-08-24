@@ -58,6 +58,8 @@
   let playToken = 0;      // 打断令牌：自增即让所有在途的异步播放请求作废
   let pendingSeek = null; // 定位保险：{ms, token, tries}
   let chapterChain = -1;  // 朗读本章：进行中的章索引，>=0 时 ended 自动续播本章下一段
+  let wholeChapter = false; // 整章连读模式（一章当作一个段落播放，文案/高亮不显示分段）
+  let preAudio = null;      // 预加载的下一音频段，用于段间无缝续播
 
   // 缓存高频 DOM
   const elSeek = $("seek"), elTCur = $("tCur"), elTDur = $("tDur");
@@ -304,6 +306,8 @@
     stopAt = null;
     pendingSeek = null;
     chapterChain = -1;            // 任何新播放/打断都终止「朗读本章」状态
+    wholeChapter = false;
+    preAudio = null;
     if (!audio.paused) { try { audio.pause(); } catch (e) { /* noop */ } }
   }
 
@@ -370,12 +374,14 @@
     audio.webkitPreservesPitch = true;
   }
 
-  /* 整段（或从段中某处）连读 */
-  function playParagraph(pid, fromMs) {
+  /* 整段（或从段中某处）连读；whole=true 表示「整章连读」模式
+     （一章当作一个段落，段间无缝续播，文案/高亮不显示分段） */
+  function playParagraph(pid, fromMs, whole) {
     stopPlayback();
     playMode = "para";
     curSi = null;
     markSolo(null, null);
+    if (whole) { chapterChain = chapterIdxOfPara(pid); wholeChapter = true; }
     ensureSrc(pid, () => {
       audio.currentTime = (fromMs || 0) / 1000;
       stopAt = null;
@@ -383,6 +389,26 @@
       safePlay();
       updateNow(pid);
     });
+    if (whole) preloadNextPara(pid);   // 预载下一段，段尾无缝续播
+  }
+
+  /* 同章内当前段的下一音频段 id（用于预加载） */
+  function nextParaInChapter(pid) {
+    const ci = chapterIdxOfPara(pid);
+    if (ci < 0) return null;
+    const ch = BOOK.chapters[ci];
+    const pi = ch.paras.findIndex((p) => p.id === pid);
+    for (let k = pi + 1; k < ch.paras.length; k++)
+      if (ch.paras[k].audio) return ch.paras[k].id;
+    return null;
+  }
+  function preloadNextPara(pid) {
+    const nx = nextParaInChapter(pid);
+    preAudio = null;
+    if (!nx) return;
+    preAudio = new Audio();
+    preAudio.preload = "auto";
+    preAudio.src = "audio/" + nx + ".mp3";
   }
 
   /* 朗读整个章节：从本章第一段起连读，段尾自动续下一段直到本章结束 */
@@ -392,7 +418,21 @@
     const first = ch.paras.find((p) => p.audio);
     if (!first) return;
     chapterChain = ci;            // 标记：ended 时自动续读本章下一段
-    playParagraph(first.id, 0);
+    wholeChapter = true;
+    playParagraph(first.id, 0, true);
+  }
+
+  /* 计算某 pid+段内句序号 在章内的全局句序号，用于「本章第 X 句」文案 */
+  function chapterSentInfo(pid, siInPara) {
+    const ci = chapterIdxOfPara(pid);
+    const ch = BOOK.chapters[ci];
+    let acc = 0;
+    for (const p of ch.paras) {
+      if (p.id === pid) break;
+      acc += p.sents.length;
+    }
+    const total = ch.paras.reduce((a, p) => a + p.sents.length, 0);
+    return { globalIdx: acc + (siInPara != null ? siInPara : 0) + 1, total };
   }
 
   /* 点读单句
@@ -511,14 +551,21 @@
     const p = paraById(pid);
     const pi = ch ? ch.paras.findIndex((x) => x.id === pid) : -1;
     $("nowTitle").textContent = ch ? `${ch.title_ru} · ${ch.title_zh}` : "";
-    let sub = pi >= 0 ? `第 ${pi + 1} / ${ch.paras.length} 段 · ${p.sents.length} 句` : "";
-    if (playMode === "sent" && curSi !== null) {
-      sub += ` · 单句点读 第 ${curSi + 1} 句`;
+    let sub;
+    if (wholeChapter && chapterChain >= 0) {
+      // 整章连读：不显示「第几段」，统一为「朗读本章 · 本章 N 句」
+      const info = chapterSentInfo(pid, null);
+      sub = `朗读本章 · 本章 ${info.total} 句`;
+    } else if (playMode === "sent" && curSi !== null) {
+      sub = `第 ${pi + 1} / ${ch.paras.length} 段 · 单句点读 第 ${curSi + 1} 句`;
       if (prefs.loop) sub += "（循环）";
+    } else {
+      sub = `第 ${pi + 1} / ${ch.paras.length} 段 · ${p.sents.length} 句`;
     }
     $("nowSub").textContent = sub;
+    // 高亮：整章连读时锁定整个 .para-merged（一章一整体），否则按 pid 切
     document.querySelectorAll(".para").forEach((d) =>
-      d.classList.toggle("playing", d.dataset.pid === pid)
+      d.classList.toggle("playing", wholeChapter ? true : d.dataset.pid === pid)
     );
   }
 
@@ -547,15 +594,21 @@
       return;
     }
     if (!prefs.auto && chapterChain < 0) { setPlayIcon(false); return; }
-    // 朗读本章：自动续播本章的下一段（同一章内跨段连读）
+    // 朗读本章：自动续播本章的下一段（同一章内跨段连读，无缝衔接）
     if (chapterChain >= 0 && chapterChain === curChapter) {
       const ch = BOOK.chapters[curChapter];
       let pi = ch.paras.findIndex((p) => p.id === curPid);
       while (pi + 1 < ch.paras.length) {
         pi++;
-        if (ch.paras[pi].audio) { playParagraph(ch.paras[pi].id, 0); return; }
+        if (ch.paras[pi].audio) {
+          // 不 reset playToken/wholeChapter，整章视为一个段落
+          wholeChapter = true;
+          playParagraph(ch.paras[pi].id, 0, true);
+          return;
+        }
       }
       chapterChain = -1;            // 本章已读完
+      wholeChapter = false;
       setPlayIcon(false);
       return;
     }
@@ -617,10 +670,14 @@
     const el = document.querySelector(
       `.sent[data-pid="${curPid}"][data-si="${idx}"]`
     );
-    if (!el || el === activeEl) return;
+    if (!el || el === activeEl) {
+      if (wholeChapter) updateWholeSub(idx);
+      return;
+    }
     if (activeEl) activeEl.classList.remove("active");
     activeEl = el;
     el.classList.add("active");
+    if (wholeChapter) updateWholeSub(idx);
     if (prefs.follow) {
       const r = $("reader").getBoundingClientRect();
       const b = el.getBoundingClientRect();
@@ -628,6 +685,14 @@
         el.scrollIntoView({ block: "center", behavior: "smooth" });
       }
     }
+  }
+
+  function updateWholeSub(siInPara) {
+    const info = chapterSentInfo(curPid, siInPara);
+    $("nowSub").textContent = `朗读本章 · 本章第 ${info.globalIdx} / ${info.total} 句`;
+    document.querySelectorAll(".para").forEach((d) =>
+      d.classList.add("playing")
+    );
   }
   requestAnimationFrame(tick);
 
