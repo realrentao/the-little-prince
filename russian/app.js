@@ -57,6 +57,7 @@
   let playMode = "para";  // "para" = 段落/连读，"sent" = 单句点读
   let playToken = 0;      // 打断令牌：自增即让所有在途的异步播放请求作废
   let pendingSeek = null; // 定位保险：{ms, token, tries}
+  let chapterChain = -1;  // 朗读本章：进行中的章索引，>=0 时 ended 自动续播本章下一段
 
   // 缓存高频 DOM
   const elSeek = $("seek"), elTCur = $("tCur"), elTDur = $("tDur");
@@ -176,29 +177,27 @@
     // Track running global sentence index within this chapter for inline placement
     let runningSentIdx = -1;
 
+    // 一章一整段：所有句子平铺进同一个 .para 容器（视觉上是一段），
+    // 但每句仍保留原始段的 data-pid，点读/单句朗读按原段音频工作。
+    const div = document.createElement("div");
+    div.className = "para para-merged";
+    div.dataset.pid = ch.paras[0] ? ch.paras[0].id : "";
+
+    const bar = document.createElement("div");
+    bar.className = "para-bar";
+    const btn = document.createElement("button");
+    btn.className = "para-play";
+    btn.textContent = "▶ 朗读本章";
+    btn.onclick = (e) => { e.stopPropagation(); playChapter(curChapter); };
+    const idx = document.createElement("span");
+    idx.className = "para-idx";
+    const totalSents = ch.paras.reduce((a, p) => a + p.sents.length, 0);
+    idx.textContent = `本章 ${totalSents} 句`;
+    bar.appendChild(btn);
+    bar.appendChild(idx);
+    div.appendChild(bar);
+
     ch.paras.forEach((p, pi) => {
-      const div = document.createElement("div");
-      div.className = "para";
-      div.dataset.pid = p.id;
-
-      const bar = document.createElement("div");
-      bar.className = "para-bar";
-      const btn = document.createElement("button");
-      btn.className = "para-play";
-      btn.textContent = "▶ 朗读本段";
-      if (p.audio) {
-        btn.onclick = (e) => { e.stopPropagation(); playParagraph(p.id, 0); };
-      } else {
-        btn.disabled = true;
-        btn.textContent = "无音频";
-      }
-      const idx = document.createElement("span");
-      idx.className = "para-idx";
-      idx.textContent = `段 ${pi + 1} / ${ch.paras.length} · ${p.sents.length} 句`;
-      bar.appendChild(btn);
-      bar.appendChild(idx);
-      div.appendChild(bar);
-
       p.sents.forEach((s, si) => {
         const sd = document.createElement("div");
         sd.className = "sent";
@@ -258,9 +257,9 @@
           });
         }
       });
-
-      box.appendChild(div);
     });
+
+    box.appendChild(div);
 
     markNav();
     $("btnPrev").disabled = curChapter === 0;
@@ -304,6 +303,7 @@
     playToken++;
     stopAt = null;
     pendingSeek = null;
+    chapterChain = -1;            // 任何新播放/打断都终止「朗读本章」状态
     if (!audio.paused) { try { audio.pause(); } catch (e) { /* noop */ } }
   }
 
@@ -383,6 +383,16 @@
       safePlay();
       updateNow(pid);
     });
+  }
+
+  /* 朗读整个章节：从本章第一段起连读，段尾自动续下一段直到本章结束 */
+  function playChapter(ci) {
+    const ch = BOOK.chapters[ci];
+    if (!ch) return;
+    const first = ch.paras.find((p) => p.audio);
+    if (!first) return;
+    chapterChain = ci;            // 标记：ended 时自动续读本章下一段
+    playParagraph(first.id, 0);
   }
 
   /* 点读单句
@@ -534,6 +544,19 @@
       } else {
         setPlayIcon(false);
       }
+      return;
+    }
+    if (!prefs.auto && chapterChain < 0) { setPlayIcon(false); return; }
+    // 朗读本章：自动续播本章的下一段（同一章内跨段连读）
+    if (chapterChain >= 0 && chapterChain === curChapter) {
+      const ch = BOOK.chapters[curChapter];
+      let pi = ch.paras.findIndex((p) => p.id === curPid);
+      while (pi + 1 < ch.paras.length) {
+        pi++;
+        if (ch.paras[pi].audio) { playParagraph(ch.paras[pi].id, 0); return; }
+      }
+      chapterChain = -1;            // 本章已读完
+      setPlayIcon(false);
       return;
     }
     if (!prefs.auto) { setPlayIcon(false); return; }
