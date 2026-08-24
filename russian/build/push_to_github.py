@@ -71,6 +71,15 @@ def collect():
             if "_x" not in fn:
                 continue
             out.append((f"illustrations/{fn}", f"{SUB}/illustrations/{fn}", "bin"))
+    # illustrations-webp/ 压缩插画（WebP，限宽，体积仅为 PNG 的 ~8%）
+    wdir = os.path.join(ROOT, "illustrations-webp")
+    if os.path.isdir(wdir):
+        for fn in sorted(os.listdir(wdir)):
+            if not fn.endswith(".webp"):
+                continue
+            if fn.startswith(EXCLUDE_PREFIX):
+                continue
+            out.append((f"illustrations-webp/{fn}", f"{SUB}/illustrations-webp/{fn}", "bin"))
     # build/ 纯文本流水线（排除日志/临时）
     bdir = os.path.join(ROOT, "build")
     if os.path.isdir(bdir):
@@ -164,7 +173,7 @@ def main():
     print("tree created:", tree["sha"][:10], "entries:", len(merged_tree))
 
     st, commit = api("POST", f"/repos/{OWNER}/{REPO}/git/commits",
-                     {"message": "Add Russian Little Prince bilingual reader (russian/)",
+                     {"message": "perf: 插画转 WebP+限宽(140MB→11MB)，懒加载+缓存头优化",
                       "tree": tree["sha"], "parents": [parent_sha]})
     if st != 201:
         raise RuntimeError(f"commit failed: {commit}")

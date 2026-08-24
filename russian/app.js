@@ -17,13 +17,18 @@
     if (!illByCh[it.chapter]) illByCh[it.chapter] = [];
     illByCh[it.chapter].push(it);
   });
-  function illustImg(file, alt) {
+  function illustImg(file, alt, isHeader) {
     const wrap = document.createElement("figure");
     wrap.className = "illust";
     const img = document.createElement("img");
-    img.loading = "lazy";
+    // WebP 体积仅原 PNG 的 ~8%，限宽导出；加载失败回退到原 PNG
+    img.loading = isHeader ? "eager" : "lazy";
+    if (isHeader) img.fetchPriority = "high";
     img.decoding = "async";
-    img.src = "illustrations/" + file;
+    const webp = "illustrations-webp/" + file.replace(/\.png$/i, ".webp");
+    const png = "illustrations/" + file;
+    img.src = webp;
+    img.onerror = () => { if (img.src.indexOf(".png") < 0) img.src = png; };
     img.alt = alt || "";
     const cap = document.createElement("figcaption");
     cap.className = "illust-cap";
@@ -160,7 +165,7 @@
     const chIll = illByCh[curChapter] || [];
     const headerIll = chIll.find((x) => x.position === "header");
     if (headerIll) {
-      const fig = illustImg(headerIll.file, ch.title_ru + " 原版插画");
+      const fig = illustImg(headerIll.file, ch.title_ru + " 原版插画", true);
       fig.classList.add("illust-header");
       head.appendChild(fig);
     }
@@ -253,7 +258,7 @@
         const illustList = inlineBySent[runningSentIdx];
         if (illustList && illustList.length) {
           illustList.forEach((it) => {
-            const fig = illustImg(it.file, ch.title_ru + " 插画");
+            const fig = illustImg(it.file, ch.title_ru + " 插画", false);
             fig.classList.add("illust-inline");
             div.appendChild(fig);
           });

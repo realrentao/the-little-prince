@@ -1,0 +1,17 @@
+{
+  "first_screen_header_imgs_loaded": 2,
+  "first_screen_total_illust_imgs_in_dom": 2,
+  "img_response_formats_first_screen": {
+    "webp": 2
+  },
+  "ch5_illust_total": 5,
+  "ch5_illust_loaded": 4,
+  "ch5_srcs_sample": [
+    "http://127.0.0.1:8795/illustrations-webp/ill_p019_x107.webp",
+    "http://127.0.0.1:8795/illustrations-webp/ill_p020_x114.webp",
+    "http://127.0.0.1:8795/illustrations-webp/ill_p021_x121.webp"
+  ],
+  "img_response_formats_all": {
+    "webp": 6
+  }
+}

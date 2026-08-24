@@ -60,6 +60,7 @@ class Handler(SimpleHTTPRequestHandler):
         ".js": "application/javascript; charset=utf-8",
         ".json": "application/json; charset=utf-8",
         ".mp3": "audio/mpeg",
+        ".webp": "image/webp",
         ".css": "text/css; charset=utf-8",
         ".html": "text/html; charset=utf-8",
     }
@@ -70,6 +71,9 @@ class Handler(SimpleHTTPRequestHandler):
         if p.endswith(".mp3"):
             # 音频要可缓存，否则每次 seek 都重新拉流
             self.send_header("Cache-Control", "public, max-age=3600")
+        elif p.endswith((".webp", ".png", ".jpg", ".jpeg", ".css", ".js", ".json", ".html")):
+            # 静态资源长缓存：文件名固定 + 内容哈希无关，靠刷新文件名更新
+            self.send_header("Cache-Control", "public, max-age=86400")
         else:
             self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
             self.send_header("Pragma", "no-cache")
