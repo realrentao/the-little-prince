@@ -31,7 +31,8 @@
     background:rgba(231,185,79,.15);color:var(--gold);border:1px solid rgba(231,185,79,.4)}
   .badge.off{background:rgba(159,176,204,.12);color:var(--muted);border-color:rgba(159,176,204,.3)}
   .btn{display:inline-block;text-decoration:none;color:#0e1726;background:var(--gold);
-    padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px}
+    padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;transition:filter .15s}
+  .btn:hover{filter:brightness(1.08)}
   .btn.off{background:transparent;color:var(--muted);border:1px solid var(--line);cursor:default}
   .desc{color:var(--muted);font-size:13px;margin:14px 0 18px;line-height:1.6}
   footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px;line-height:1.7}
@@ -43,7 +44,7 @@
   <header>
     <div class="star">✦ ✧ ✦</div>
     <h1>小王子 · The Little Prince</h1>
-    <p class="sub">多语言双语朗读阅读器 — 俄 / 意 / 西 / 法 / 英</p>
+    <p class="sub">多语言双语朗读阅读器 — <span class="book">俄 / 意 / 西 已上线</span></p>
   </header>
 
   <div class="grid">
@@ -53,28 +54,28 @@
       <div class="flag">🇷🇺</div>
       <div class="lang">Русский · 俄语</div>
       <div class="native">Маленький принц</div>
-      <div class="desc">俄语真人配音（edge-tts）、无极调速、逐句音标（IPA）、单句点读、打断续播、俄中双语对照。</div>
+      <div class="desc">俄语真人配音（edge-tts）、无极调速、逐句音标（IPA）、单句点读、俄中双语对照。</div>
       <a class="btn" href="russian/index.html">进入阅读 →</a>
     </div>
 
-    <!-- 意大利语：待上线 -->
+    <!-- 意大利语：已上线 -->
     <div class="card">
-      <div class="badge off">即将上线</div>
+      <div class="badge">已上线</div>
       <div class="flag">🇮🇹</div>
       <div class="lang">Italiano · 意大利语</div>
       <div class="native">Il piccolo principe</div>
-      <div class="desc">意中双语朗读版，复用本项目配音与音标流水线。</div>
-      <span class="btn off">敬请期待</span>
+      <div class="desc">意中双语朗读版：意语真人配音、逐词音标、逐句中文、双列对照、四模式 + 整章连读点读。</div>
+      <a class="btn" href="italian/index.html">进入阅读 →</a>
     </div>
 
-    <!-- 西班牙语：待上线 -->
+    <!-- 西班牙语：已上线 -->
     <div class="card">
-      <div class="badge off">即将上线</div>
+      <div class="badge">已上线</div>
       <div class="flag">🇪🇸</div>
       <div class="lang">Español · 西班牙语</div>
       <div class="native">El principito</div>
-      <div class="desc">西中双语朗读版，含动词变位辅助。</div>
-      <span class="btn off">敬请期待</span>
+      <div class="desc">西中双语朗读版：西语真人配音、逐词音标、逐句中文、双列对照、四模式 + 整章连读点读。</div>
+      <a class="btn" href="spanish/index.html">进入阅读 →</a>
     </div>
 
     <!-- 法语：待上线 -->
