@@ -32,13 +32,18 @@
       <div class="tb-group">
         <span class="tb-label">显示</span>
         <div class="seg" id="modeSeg" role="group" aria-label="显示模式">
-          <button data-mode="pair"  class="on">意中对照</button>
+          <button data-mode="pair"  class="on">逐句对照</button>
+          <button data-mode="col">双栏</button>
           <button data-mode="it">仅意语</button>
           <button data-mode="zh">仅中文</button>
         </div>
       </div>
 
       <div class="tb-group">
+        <label class="switch">
+          <input type="checkbox" id="chkIpa" checked>
+          <span>音标</span>
+        </label>
         <label class="switch">
           <input type="checkbox" id="chkFollow" checked>
           <span>自动滚动</span>
@@ -111,6 +116,7 @@
 
 <div id="overlay"></div>
 
+<script src="data/lexicon.js"></script>
 <script src="data/book.js"></script>
 <script src="data/illust.js"></script>
 <script src="app.js"></script>

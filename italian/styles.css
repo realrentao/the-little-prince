@@ -1,4 +1,4 @@
-/* ===== Маленький принц · 俄中双语朗读阅读器 ===== */
+/* ===== Il Piccolo Principe · 意中双语朗读阅读器 ===== */
 :root{
   --bg:#f7f5f0;
   --paper:#fffdf9;
@@ -58,7 +58,7 @@ button,input,select{font-family:inherit}
 #chapterNav a:hover{background:#e7e0d2;color:var(--ink)}
 #chapterNav a.on{background:var(--accent);color:#fff;font-weight:600;box-shadow:var(--shadow)}
 #chapterNav a.on .cn-zh{color:#fdf6e3}
-#chapterNav a .cn-ru{flex:1;font-variant:small-caps}
+#chapterNav a .cn-it{flex:1;font-variant:small-caps}
 #chapterNav a .cn-zh{font-size:11.5px;color:var(--ink-faint)}
 .side-foot{
   padding:10px 16px 14px;border-top:1px solid var(--line);
@@ -108,13 +108,13 @@ button,input,select{font-family:inherit}
 }
 
 .chapter-head{margin:0 0 30px;padding-bottom:16px;border-bottom:2px solid var(--accent-soft)}
-.chapter-head .ch-ru{
+.chapter-head .ch-it{
   font-size:31px;font-weight:700;color:var(--accent-deep);margin:0;
   letter-spacing:.5px;line-height:1.2;
 }
 .chapter-head .ch-zh{font-size:15px;color:var(--ink-faint);margin-top:7px;letter-spacing:1px}
 
-/* 圣埃克苏佩里原版插画 — 直接放在页面上，无黑底 */
+/* 圣埃克苏佩里原版插画 — 复用 russian 站资源，无黑底 */
 .illust{
   margin:20px auto;text-align:center;display:block;max-width:100%;
   background:transparent;
@@ -208,7 +208,7 @@ button,input,select{font-family:inherit}
 .s-btn.ghost{background:#fff;color:var(--accent-deep)}
 .s-btn.ghost:hover{background:var(--accent-soft);color:var(--accent-deep)}
 
-.ru-line{
+.it-line{
   font-size:var(--fs);line-height:1.95;color:var(--ink);
   letter-spacing:.1px;
 }
@@ -217,16 +217,6 @@ button,input,select{font-family:inherit}
   margin-top:2px;font-family:"Source Han Serif SC","Songti SC","Microsoft YaHei",sans-serif;
 }
 .zh-line:empty::before{content:"（待译）";color:#c9c2b4;font-style:italic}
-
-/* 整章中文对照块 */
-.zh-chapter{
-  background:var(--blue-soft);border:1px solid var(--line-soft);
-  border-radius:var(--radius);padding:18px 22px;margin:18px 0 30px;
-  font-size:calc(var(--fs) * .9);line-height:1.95;color:var(--blue);
-  white-space:pre-line;letter-spacing:.3px;
-  font-family:"Source Han Serif SC","Songti SC","Microsoft YaHei",sans-serif;
-}
-body.mode-zh .zh-chapter{max-width:960px;margin:0 auto;padding:30px 22px}
 
 /* 词 + 音标 */
 .tok{display:inline-flex;flex-direction:column;align-items:center;vertical-align:baseline}
@@ -238,13 +228,14 @@ body.mode-zh .zh-chapter{max-width:960px;margin:0 auto;padding:30px 22px}
 }
 body.no-ipa .tok{display:inline}
 body.no-ipa .tok .ph{display:none}
-body.no-ipa .ru-line{line-height:1.85}
+body.no-ipa .it-line{line-height:1.85}
 
 /* 显示模式 */
-body.mode-it .zh-chapter{display:none}
-body.mode-zh .para{display:none}
+body.mode-it .zh-line{display:none}
+body.mode-zh .it-line{display:none}
+body.mode-zh .tok .ph{display:none}
 body.mode-col .sent{display:flex;gap:18px;align-items:flex-start}
-body.mode-col .ru-line{flex:1 1 55%;min-width:0}
+body.mode-col .it-line{flex:1 1 55%;min-width:0}
 body.mode-col .zh-line{flex:1 1 45%;min-width:0;margin-top:0;padding-left:16px;border-left:1px solid var(--line-soft)}
 
 /* 章节页脚 */

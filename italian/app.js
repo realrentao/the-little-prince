@@ -1,4 +1,4 @@
-/* ===== Маленький принц · 俄中双语朗读阅读器 ===== */
+/* ===== Il Piccolo Principe · 意中双语朗读阅读器 ===== */
 (function () {
   "use strict";
 
@@ -21,7 +21,8 @@
     const wrap = document.createElement("figure");
     wrap.className = "illust";
     const img = document.createElement("img");
-    // WebP 体积仅原 PNG 的 ~8%，限宽导出；加载失败回退到原 PNG
+    // WebP 体积仅原 PNG 的 ~8%，限宽导出；加载失败回退到原 PNG。
+    // 插图复用 russian 站已部署资源（../russian/illustrations-webp/）。
     img.loading = isHeader ? "eager" : "lazy";
     if (isHeader) img.fetchPriority = "high";
     img.decoding = "async";
@@ -70,11 +71,14 @@
   const elSeek = $("seek"), elTCur = $("tCur"), elTDur = $("tDur");
 
   /* =======================================================
-     分词 + 音标渲染
+     分词 + 音标渲染（意语音标：逐词查 lexicon.js）
      ======================================================= */
-  // 意语渲染：按词分词（不挂音标——意语发音较规则，以 edge-tts 配音为准）
+  // 把「前缀标点 + 意语词（含重音字母）+ 后缀标点」拆开，词的下方挂 IPA
+  const PART_RE = /^([^À-Ýà-ÿA-Za-z0-9]*)([À-Ýà-ÿA-Za-z]+(?:-[À-Ýà-ÿA-Za-z]+)*|\d+)?([\s\S]*)$/;
+
   function renderIt(text) {
     const frag = document.createDocumentFragment();
+    // 按空白切分并保留空白
     const chunks = text.split(/(\s+)/);
     for (const chunk of chunks) {
       if (chunk === "") continue;
@@ -82,10 +86,23 @@
         frag.appendChild(document.createTextNode(chunk));
         continue;
       }
+      const m = chunk.match(PART_RE);
+      if (!m || !m[2]) {
+        frag.appendChild(document.createTextNode(chunk));
+        continue;
+      }
+      const [, pre, word, post] = m;
+      const tok = document.createElement("span");
+      tok.className = "tok";
       const wd = document.createElement("span");
       wd.className = "wd";
-      wd.textContent = chunk;
-      frag.appendChild(wd);
+      wd.textContent = (pre || "") + word + (post || "");
+      const ph = document.createElement("span");
+      ph.className = "ph";
+      ph.textContent = LEX[word.toLowerCase()] || "";
+      tok.appendChild(wd);
+      tok.appendChild(ph);
+      frag.appendChild(tok);
     }
     return frag;
   }
@@ -99,8 +116,8 @@
     BOOK.chapters.forEach((ch, i) => {
       const a = document.createElement("a");
       a.innerHTML =
-        '<span class="cn-ru"></span><span class="cn-zh"></span>';
-      a.querySelector(".cn-ru").textContent = ch.title_it;
+        '<span class="cn-it"></span><span class="cn-zh"></span>';
+      a.querySelector(".cn-it").textContent = ch.title_it;
       a.querySelector(".cn-zh").textContent = ch.title_zh;
       a.onclick = () => { openChapter(i); closeSidebarOnMobile(); };
       nav.appendChild(a);
@@ -110,7 +127,7 @@
     const m = BOOK.meta;
     $("sideStats").innerHTML =
       `全书 ${m.n_chapters} 章 · ${m.n_paras} 段 · ${m.n_sents} 句<br>` +
-      `配音 ${m.voice}` +
+      `配音 ${m.voice}<br>音标：${m.ipa_note}` +
       `<hr class="sf-hr"><b>点读</b>：单击句子 = 只读这一句<br>` +
       `Shift+单击 / <b>⏵起读</b> = 从这句往下连读<br>` +
       `<b>←/→</b> 上一句 / 下一句 · <b>R</b> 重复本句 · <b>空格</b> 播放暂停`;
@@ -137,7 +154,7 @@
     const head = document.createElement("div");
     head.className = "chapter-head";
     const h = document.createElement("h1");
-    h.className = "ch-ru";
+    h.className = "ch-it";
     h.textContent = ch.title_it;
     const sub = document.createElement("div");
     sub.className = "ch-zh";
@@ -195,15 +212,15 @@
         sd.dataset.pid = p.id;
         sd.dataset.si = si;
 
-        const ru = document.createElement("div");
-        ru.className = "ru-line";
-        ru.appendChild(renderIt(s.it));
+        const it = document.createElement("div");
+        it.className = "it-line";
+        it.appendChild(renderIt(s.it));
 
         const zh = document.createElement("div");
         zh.className = "zh-line";
         zh.textContent = s.zh || "";
 
-        sd.appendChild(ru);
+        sd.appendChild(it);
         sd.appendChild(zh);
 
         if (p.audio && s.t) {
@@ -252,19 +269,11 @@
 
     box.appendChild(div);
 
-    // 整章中文对照（ch.zh 按俄段落以 \n 分段，CSS white-space:pre-line 保留换行）
-    if (ch.zh) {
-      const zhc = document.createElement("div");
-      zhc.className = "zh-chapter";
-      zhc.textContent = ch.zh;
-      box.appendChild(zhc);
-    }
-
     markNav();
     $("btnPrev").disabled = curChapter === 0;
     $("btnNext").disabled = curChapter === BOOK.chapters.length - 1;
     $("chapterFootLabel").textContent =
-      `${ch.title_ru} · ${ch.title_zh}`;
+      `${ch.title_it} · ${ch.title_zh}`;
     $("readProgress").textContent =
       `第 ${curChapter + 1} / ${BOOK.chapters.length} 章`;
     if (!keepScroll) $("reader").scrollTop = 0;
@@ -755,7 +764,7 @@
   // 显示模式
   function setMode(m) {
     prefs.mode = m;
-    document.body.classList.remove("mode-pair", "mode-col", "mode-ru", "mode-zh");
+    document.body.classList.remove("mode-pair", "mode-col", "mode-it", "mode-zh");
     document.body.classList.add("mode-" + m);
     [...$("modeSeg").children].forEach((b) =>
       b.classList.toggle("on", b.dataset.mode === m)
@@ -766,7 +775,12 @@
     b.onclick = () => setMode(b.dataset.mode);
   });
 
-  // 滚动 / 连续 / 单句循环（意语版无音标，已移除 chkIpa）
+  // 音标 / 滚动 / 连续 / 单句循环
+  $("chkIpa").onchange = (e) => {
+    prefs.ipa = e.target.checked;
+    document.body.classList.toggle("no-ipa", !prefs.ipa);
+    savePrefs();
+  };
   $("chkFollow").onchange = (e) => { prefs.follow = e.target.checked; savePrefs(); };
   $("chkAuto").onchange = (e) => { prefs.auto = e.target.checked; savePrefs(); };
   $("chkLoop").onchange = (e) => {
@@ -822,6 +836,8 @@
   setMode(prefs.mode);
   setFs(prefs.fs);
   setRate(prefs.rate);
+  $("chkIpa").checked = prefs.ipa;
+  document.body.classList.toggle("no-ipa", !prefs.ipa);
   $("chkFollow").checked = prefs.follow;
   $("chkAuto").checked = prefs.auto;
   $("chkLoop").checked = prefs.loop;
