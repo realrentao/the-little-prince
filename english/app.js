@@ -71,9 +71,9 @@
   const elSeek = $("seek"), elTCur = $("tCur"), elTDur = $("tDur");
 
   /* =======================================================
-     分词 + 音标渲染（西语音标：逐词查 lexicon.js）
+     分词 + 音标渲染（英语音标：逐词查 lexicon.js）
      ======================================================= */
-  // 把「前缀标点 + 西语词（含重音字母 ñ ü áéíóú）+ 后缀标点」拆开，词的下方挂 IPA
+  // 把「前缀标点 + 英语词（含撇号等）+ 后缀标点」拆开，词的下方挂 IPA
   const PART_RE = /^([^A-Za-z0-9]*)([A-Za-z]+(?:[\'\-]?[A-Za-z]+)*|\d+)?([\s\S]*)$/;
 
   function renderEn(text) {
@@ -764,7 +764,7 @@
   // 显示模式
   function setMode(m) {
     prefs.mode = m;
-    document.body.classList.remove("mode-pair", "mode-col", "mode-es", "mode-zh");
+    document.body.classList.remove("mode-pair", "mode-col", "mode-en", "mode-zh");
     document.body.classList.add("mode-" + m);
     [...$("modeSeg").children].forEach((b) =>
       b.classList.toggle("on", b.dataset.mode === m)
