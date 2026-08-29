@@ -726,7 +726,7 @@
 
   function setMode(m) {
     prefs.mode = m;
-    document.body.classList.remove("mode-pair", "mode-col", "mode-es", "mode-zh");
+    document.body.classList.remove("mode-pair", "mode-col", "mode-ar", "mode-zh");
     document.body.classList.add("mode-" + m);
     [...$("modeSeg").children].forEach((b) =>
       b.classList.toggle("on", b.dataset.mode === m)
