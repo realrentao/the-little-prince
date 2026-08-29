@@ -236,7 +236,7 @@ body.no-ipa .tok .ph{display:none}
 body.no-ipa .es-line{line-height:1.85}
 
 /* 显示模式 */
-body.mode-es .zh-line{display:none}
+body.mode-ar .zh-line{display:none}
 body.mode-zh .es-line{display:none}
 body.mode-zh .tok .ph{display:none}
 body.mode-col .sent{display:flex;gap:18px;align-items:flex-start}
