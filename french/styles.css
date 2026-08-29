@@ -231,7 +231,7 @@ body.no-ipa .tok .ph{display:none}
 body.no-ipa .es-line{line-height:1.85}
 
 /* 显示模式 */
-body.mode-es .zh-line{display:none}
+body.mode-fr .zh-line{display:none}
 body.mode-zh .es-line{display:none}
 body.mode-zh .tok .ph{display:none}
 body.mode-col .sent{display:flex;gap:18px;align-items:flex-start}
@@ -328,5 +328,3 @@ input[type=range]::-moz-range-thumb{
   .s-btn{font-size:11.5px;padding:5px 13px}
 }
 
-/* fr/en 镜像：仅外语模式隐藏中文行 */
-body.mode-fr .zh-line{display:none}
