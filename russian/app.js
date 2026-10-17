@@ -73,7 +73,7 @@
      分词 + 音标渲染
      ======================================================= */
   // 把「前缀标点 + 俄语词 + 后缀标点」拆开，词的下方挂 IPA
-  const PART_RE = /^([^А-Яа-яЁёA-Za-z0-9]*)([А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*|[A-Za-z]+|\d+)?([\s\S]*)$/;
+  const PART_RE = /^([^А-Яа-яЁё\u0301A-Za-z0-9]*)([А-Яа-яЁё\u0301]+(?:-[А-Яа-яЁё\u0301]+)*|[A-Za-z]+|\d+)?([\s\S]*)$/;
 
   function renderRu(text) {
     const frag = document.createDocumentFragment();
@@ -98,7 +98,7 @@
       wd.textContent = (pre || "") + word + (post || "");
       const ph = document.createElement("span");
       ph.className = "ph";
-      ph.textContent = LEX[word.toLowerCase()] || "";
+      ph.textContent = LEX[word.toLowerCase().replace(/\u0301/g, "")] || "";
       tok.appendChild(wd);
       tok.appendChild(ph);
       frag.appendChild(tok);
