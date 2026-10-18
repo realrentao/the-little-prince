@@ -24,7 +24,11 @@ html,body{margin:0;padding:0;height:100%}
 body{
   background:var(--bg);
   color:var(--ink);
-  font-family:"Georgia","Noto Serif","Source Han Serif SC","Songti SC","SimSun",serif;
+  /* 西里尔字母 + 组合尖音符 U+0301 的渲染依赖字体的 GPOS mark 定位：
+     Georgia/Times New Roman 等无西里尔或不支持组合定位，acute 会被渲染成
+     与字母脱节的独立符号（视觉断裂）甚至被吞掉。前置 Cambria/Sitka Text/
+     Segoe UI（实测 mark positioning 正确）；中文仍按序 fallback 不受影响。 */
+  font-family:"Cambria","Sitka Text","Segoe UI","Georgia","Noto Serif","Source Han Serif SC","Songti SC","SimSun",serif;
   -webkit-font-smoothing:antialiased;
 }
 button,input,select{font-family:inherit}
@@ -211,6 +215,8 @@ button,input,select{font-family:inherit}
 .ru-line{
   font-size:var(--fs);line-height:1.95;color:var(--ink);
   letter-spacing:.1px;
+  /* 俄文正文显式锁定 acute 安全字体栈（与 body 一致），防止全局字体栈被意外改动时重音再次断裂 */
+  font-family:"Cambria","Sitka Text","Segoe UI","Georgia","Noto Serif",serif;
 }
 .zh-line{
   font-size:calc(var(--fs) * .82);line-height:1.75;color:var(--blue);
